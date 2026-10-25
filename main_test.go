@@ -136,8 +136,8 @@ func TestRouteSplitsAClientFromTheUpstreamPath(t *testing.T) {
 func TestKeychainServiceMatchesTheVerifiedHashes(t *testing.T) {
 	want := map[string]string{
 		"":                             "Claude Code-credentials",
-		"/Users/radulupu/.claude-work": "Claude Code-credentials-537c1bb2",
-		"/Users/radulupu/.claude-science-account": "Claude Code-credentials-5eefafbf",
+		"/home/user/.claude-work": "Claude Code-credentials-174d0719",
+		"/home/user/.claude-science-account": "Claude Code-credentials-37a79caf",
 	}
 	for dir, service := range want {
 		if got := keychainService(dir); got != service {
