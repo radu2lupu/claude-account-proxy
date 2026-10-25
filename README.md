@@ -10,6 +10,17 @@ claude ──ANTHROPIC_BASE_URL──▶ proxy 127.0.0.1:48617 ──▶ api.ant
                                  └─ 429 "rejected"? mark spent, retry on the next account
 ```
 
+## Quick start
+
+```sh
+git clone https://github.com/radu2lupu/claude-account-proxy && cd claude-account-proxy
+./install.sh                                   # builds and starts the background service
+echo 'source "$HOME/.local/bin/claude-account-proxy-shell.sh"' >> ~/.zshrc   # or ~/.bashrc
+claude-account-proxy add                       # sign in another account (browser), repeat per account
+```
+
+Open a new terminal and run `claude` as usual. When one account's limit is hit, the next one answers.
+
 ## What it does and does not touch
 
 - Only `/v1/messages*` requests are sent on an account's token. Everything else (claude.ai connectors, MCP, artifacts, profile) goes through untouched with Claude Code's own credentials, so those keep working.
@@ -62,6 +73,18 @@ A request path may begin with `/_c/<client>/` to give a client (an agent, a tool
 - **Don't copy a login between machines.** Refresh tokens rotate; two machines holding the same one will log each other out. Sign in once per machine.
 - **Headless hosts.** On macOS over SSH the Keychain is locked; run the proxy as a user service in the login session (what `install.sh` does).
 - The reset time is read from Anthropic's response headers, which are not a documented contract and may change.
+
+## Alternatives
+
+You are not short of options. These are the projects I found that do something similar (read their READMEs, I have not audited them): [claude-swap](https://github.com/realiti4/claude-swap) (switches accounts at a usage threshold, dashboard), [teamclaude](https://github.com/KarpelesLab/teamclaude) (proxy that pools Claude, Codex and API-key accounts), [claude-rotate](https://github.com/clement-z/claude-rotate) (proxy with burst-aware 429 handling and analytics), [swisscode](https://github.com/jellologic/swisscode) (proxy with 429 failover and a traffic inspector), [claude-rotate by OpenGraphLabs](https://github.com/OpenGraphLabs/claude-rotate) (resumes the session on the next account).
+
+This project's niche is being small and conservative: one dependency-free Go binary, it reuses the logins Claude Code already holds, switches mid-request so the session never restarts, and leaves connectors, MCP servers and artifacts alone. It has no dashboard, no pre-limit switching and no non-Claude providers.
+
+## Uninstall
+
+macOS: `launchctl bootout gui/$(id -u)/dev.claude-account-proxy; rm ~/Library/LaunchAgents/dev.claude-account-proxy.plist`.
+Linux: `systemctl --user disable --now claude-account-proxy`.
+Then remove `~/.local/bin/claude-account-proxy*` and the `source` line from your shell profile. Accounts you added stay as ordinary `~/.claude-<name>` logins; `claude-account-proxy remove <name>` deletes one.
 
 ## Develop
 
