@@ -84,12 +84,6 @@ A request path may begin with `/_c/<client>/` to give a client (an agent, a tool
 - **Headless hosts.** On macOS over SSH the Keychain is locked; run the proxy as a user service in the login session (what `install.sh` does).
 - The reset time is read from Anthropic's response headers, which are not a documented contract and may change.
 
-## Alternatives
-
-You are not short of options. These are the projects I found that do something similar (read their READMEs, I have not audited them): [claude-swap](https://github.com/realiti4/claude-swap) (switches accounts at a usage threshold, dashboard), [teamclaude](https://github.com/KarpelesLab/teamclaude) (proxy that pools Claude, Codex and API-key accounts), [claude-rotate](https://github.com/clement-z/claude-rotate) (proxy with burst-aware 429 handling and analytics), [swisscode](https://github.com/jellologic/swisscode) (proxy with 429 failover and a traffic inspector), [claude-rotate by OpenGraphLabs](https://github.com/OpenGraphLabs/claude-rotate) (resumes the session on the next account).
-
-This project's niche is being small and conservative: one dependency-free Go binary, it reuses the logins Claude Code already holds, switches mid-request so the session never restarts, and leaves connectors, MCP servers and artifacts alone. It has no dashboard, no pre-limit switching and no non-Claude providers.
-
 ## Uninstall
 
 macOS: `launchctl bootout gui/$(id -u)/dev.limitbreak; rm ~/Library/LaunchAgents/dev.limitbreak.plist`.
