@@ -39,24 +39,20 @@ That defines a `claude` function that points Claude Code at the proxy when it is
 
 ## Add accounts
 
-Log each account in once into its own config directory:
-
 ```sh
-CLAUDE_CONFIG_DIR=~/.claude-work claude auth login --claudeai
-CLAUDE_CONFIG_DIR=~/.claude-second claude auth login --claudeai
+claude-account-proxy add            # signs in a new account in your browser, names it account-N
+claude-account-proxy add work       # or pick the name
+claude-account-proxy list           # accounts, who they are, which one is active (*)
+claude-account-proxy remove work    # sign it out and delete its login from this machine
 ```
 
-The proxy rediscovers `~/.claude-*` every 30 seconds; no restart. Check with:
-
-```sh
-curl -s http://127.0.0.1:48617/_status
-```
+`add` runs Claude Code's own browser sign-in into its own config directory (`~/.claude-<name>`), checks the login landed, tells you which email it is, and warns if you added the same account twice. The running proxy picks it up within 30 seconds; no restart. The default account is whatever plain `claude auth login` signs in. Raw status for scripts: `curl -s http://127.0.0.1:48617/_status`.
 
 Every switch is logged (`~/Library/Logs/claude-account-proxy.log` on macOS, the journal on Linux): the account that ran out, when it resets, and the one now serving.
 
 ## Options
 
-`claude-account-proxy --port 48617 --upstream https://api.anthropic.com --home ~ --credentials auto|keychain|file`
+`claude-account-proxy serve --port 48617 --upstream https://api.anthropic.com --home ~ --credentials auto|keychain|file`
 
 A request path may begin with `/_c/<client>/` to give a client (an agent, a tool) its own active account; the prefix is stripped before forwarding.
 

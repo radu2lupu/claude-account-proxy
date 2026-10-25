@@ -294,6 +294,21 @@ type login struct {
 	ExpiresAt   *float64 `json:"expiresAt"`
 }
 
+// claudeEnv is the environment for running `claude` as the login in configDir (empty: the default
+// login), without this proxy or an injected token in the way.
+func claudeEnv(configDir string) []string {
+	var env []string
+	for _, kv := range os.Environ() {
+		if !strings.HasPrefix(kv, "ANTHROPIC_BASE_URL=") && !strings.HasPrefix(kv, "CLAUDE_CODE_OAUTH_TOKEN=") {
+			env = append(env, kv)
+		}
+	}
+	if configDir != "" {
+		env = append(env, "CLAUDE_CONFIG_DIR="+configDir, "CLAUDE_SECURESTORAGE_CONFIG_DIR="+configDir)
+	}
+	return env
+}
+
 func (a *accounts) refresh(acc account) {
 	if a.claude == "" {
 		return
@@ -302,16 +317,7 @@ func (a *accounts) refresh(acc account) {
 	defer cancel()
 	cmd := exec.CommandContext(ctx, a.claude, "-p", "ok", "--model", "haiku")
 	cmd.Stdin = nil
-	var env []string
-	for _, kv := range os.Environ() {
-		if !strings.HasPrefix(kv, "ANTHROPIC_BASE_URL=") && !strings.HasPrefix(kv, "CLAUDE_CODE_OAUTH_TOKEN=") {
-			env = append(env, kv)
-		}
-	}
-	if acc.Dir != "" {
-		env = append(env, "CLAUDE_CONFIG_DIR="+acc.Dir, "CLAUDE_SECURESTORAGE_CONFIG_DIR="+acc.Dir)
-	}
-	cmd.Env = env
+	cmd.Env = claudeEnv(acc.Dir)
 	_ = cmd.Run()
 }
 
@@ -536,12 +542,21 @@ func relay(w http.ResponseWriter, resp *http.Response) {
 }
 
 func main() {
-	port := flag.Int("port", envInt("CLAUDE_ACCOUNT_PROXY_PORT", defaultPort), "port to listen on (loopback only)")
-	upstream := flag.String("upstream", envString("CLAUDE_ACCOUNT_PROXY_UPSTREAM", "https://api.anthropic.com"), "Anthropic API address")
+	args := os.Args[1:]
+	if len(args) > 0 && !strings.HasPrefix(args[0], "-") {
+		os.Exit(runCommand(args[0], args[1:]))
+	}
+	serve(args)
+}
+
+func serve(args []string) {
+	flags := flag.NewFlagSet("serve", flag.ExitOnError)
+	port := flags.Int("port", envInt("CLAUDE_ACCOUNT_PROXY_PORT", defaultPort), "port to listen on (loopback only)")
+	upstream := flags.String("upstream", envString("CLAUDE_ACCOUNT_PROXY_UPSTREAM", "https://api.anthropic.com"), "Anthropic API address")
 	home, _ := os.UserHomeDir()
-	homeFlag := flag.String("home", home, "home dir holding the Claude logins")
-	credentials := flag.String("credentials", "auto", "auto, keychain or file")
-	flag.Parse()
+	homeFlag := flags.String("home", home, "home dir holding the Claude logins")
+	credentials := flags.String("credentials", "auto", "auto, keychain or file")
+	_ = flags.Parse(args)
 	listener, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", *port))
 	if err != nil {
 		log.Fatal(err)
