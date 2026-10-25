@@ -1,4 +1,4 @@
-// Claude account proxy: one `claude` install, several logins, switched without a restart.
+// limitbreak: one `claude` install, several logins, switched without a restart.
 //
 // Run it on a host (Mac or Linux) and start Claude Code with
 //
@@ -551,8 +551,8 @@ func main() {
 
 func serve(args []string) {
 	flags := flag.NewFlagSet("serve", flag.ExitOnError)
-	port := flags.Int("port", envInt("CLAUDE_ACCOUNT_PROXY_PORT", defaultPort), "port to listen on (loopback only)")
-	upstream := flags.String("upstream", envString("CLAUDE_ACCOUNT_PROXY_UPSTREAM", "https://api.anthropic.com"), "Anthropic API address")
+	port := flags.Int("port", envInt("LIMITBREAK_PORT", defaultPort), "port to listen on (loopback only)")
+	upstream := flags.String("upstream", envString("LIMITBREAK_UPSTREAM", "https://api.anthropic.com"), "Anthropic API address")
 	home, _ := os.UserHomeDir()
 	homeFlag := flags.String("home", home, "home dir holding the Claude logins")
 	credentials := flags.String("credentials", "auto", "auto, keychain or file")
@@ -561,7 +561,7 @@ func serve(args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("claude-account-proxy listening on http://%s", listener.Addr())
+	log.Printf("limitbreak listening on http://%s", listener.Addr())
 	log.Fatal(http.Serve(listener, newProxy(newAccounts(*homeFlag, *credentials, ""), *upstream)))
 }
 

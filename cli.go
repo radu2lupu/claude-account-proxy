@@ -15,10 +15,11 @@ import (
 	"time"
 )
 
-const usage = `claude-account-proxy [serve flags]        run the proxy (default)
-claude-account-proxy add [name]           sign in a new account (opens the browser)
-claude-account-proxy list                 show the accounts
-claude-account-proxy remove <name> [-y]   sign an account out and delete its login
+const usage = `limitbreak [serve flags]        run the proxy (default)
+limitbreak add [name]           sign in a new account (opens the browser)
+limitbreak list                 show the accounts
+limitbreak remove <name> [-y]   sign an account out and delete its login
+limitbreak demo                 watch a switch happen, simulated, no real login touched
 
 The default account is the one plain "claude auth login" signs in.`
 
@@ -41,6 +42,8 @@ func runCommand(command string, args []string) int {
 			name = args[0]
 		}
 		err = addAccount(a, name, loginAs(a), os.Stdout)
+	case "demo":
+		err = runDemo(os.Stdout)
 	case "list":
 		listAccounts(a, os.Stdout)
 	case "remove":
@@ -136,7 +139,7 @@ func addAccount(a *accounts, name string, login func(dir string) error, out io.W
 	fmt.Fprintf(out, "Added %s (%s). %d accounts now.\n", name, who, len(list))
 	for _, other := range list {
 		if other.ID != name && added.Email != "" && other.Email == added.Email {
-			fmt.Fprintf(out, "Warning: %s is the same login as %q; two entries for one account do not add capacity. `claude-account-proxy remove %s` drops it.\n", added.Email, other.ID, name)
+			fmt.Fprintf(out, "Warning: %s is the same login as %q; two entries for one account do not add capacity. `limitbreak remove %s` drops it.\n", added.Email, other.ID, name)
 		}
 	}
 	return nil
@@ -145,7 +148,7 @@ func addAccount(a *accounts, name string, login func(dir string) error, out io.W
 func listAccounts(a *accounts, out io.Writer) {
 	list := freshAccounts(a)
 	if len(list) == 0 {
-		fmt.Fprintln(out, "No accounts signed in. Run `claude auth login` (default) or `claude-account-proxy add`.")
+		fmt.Fprintln(out, "No accounts signed in. Run `claude auth login` (default) or `limitbreak add`.")
 		return
 	}
 	active := activeAccount()
@@ -161,13 +164,13 @@ func listAccounts(a *accounts, out io.Writer) {
 		fmt.Fprintf(out, "%s %-16s %s\n", mark, acc.ID, email)
 	}
 	if active == "" {
-		fmt.Fprintln(out, "(proxy not running: start it with the installed service, or `claude-account-proxy`)")
+		fmt.Fprintln(out, "(proxy not running: start it with the installed service, or `limitbreak`)")
 	}
 }
 
 // activeAccount asks the running proxy which account the shared client is on; empty when it is down.
 func activeAccount() string {
-	resp, err := (&http.Client{Timeout: time.Second}).Get(fmt.Sprintf("http://127.0.0.1:%d/_status", envInt("CLAUDE_ACCOUNT_PROXY_PORT", defaultPort)))
+	resp, err := (&http.Client{Timeout: time.Second}).Get(fmt.Sprintf("http://127.0.0.1:%d/_status", envInt("LIMITBREAK_PORT", defaultPort)))
 	if err != nil {
 		return ""
 	}
@@ -203,7 +206,7 @@ func removeAccount(a *accounts, args []string, in io.Reader, out io.Writer) erro
 		}
 	}
 	if name == "" {
-		return fmt.Errorf("usage: claude-account-proxy remove <name> [-y]")
+		return fmt.Errorf("usage: limitbreak remove <name> [-y]")
 	}
 	if name == defaultID {
 		return fmt.Errorf(`the default account is Claude Code's own login; sign out with "claude auth logout"`)

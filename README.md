@@ -1,4 +1,10 @@
-# claude-account-proxy
+# limitbreak
+
+```
+   ★ L I M I T   B R E A K ★
+   ADA    [██████████] LIMIT   → spent
+   GRACE  [░░░░░░░░░░] ready   → takes the hit
+```
 
 Use several Claude accounts from **one** Claude Code install, and switch between them automatically when an account's usage limit is hit, without restarting the session or losing its history.
 
@@ -10,13 +16,15 @@ claude ──ANTHROPIC_BASE_URL──▶ proxy 127.0.0.1:48617 ──▶ api.ant
                                  └─ 429 "rejected"? mark spent, retry on the next account
 ```
 
+Try it without touching any real login: `limitbreak demo` plays a simulated switch in your terminal.
+
 ## Quick start
 
 ```sh
-git clone https://github.com/radu2lupu/claude-account-proxy && cd claude-account-proxy
+git clone https://github.com/radu2lupu/limitbreak && cd limitbreak
 ./install.sh                                   # builds and starts the background service
-echo 'source "$HOME/.local/bin/claude-account-proxy-shell.sh"' >> ~/.zshrc   # or ~/.bashrc
-claude-account-proxy add                       # sign in another account (browser), repeat per account
+echo 'source "$HOME/.local/bin/limitbreak-shell.sh"' >> ~/.zshrc   # or ~/.bashrc
+limitbreak add                       # sign in another account (browser), repeat per account
 ```
 
 Open a new terminal and run `claude` as usual. When one account's limit is hit, the next one answers.
@@ -32,18 +40,18 @@ Open a new terminal and run `claude` as usual. When one account's limit is hit, 
 
 ## Install
 
-Needs Go 1.22+ to build, macOS or Linux.
+Needs Go 1.22+ to build, macOS or Linux. Prebuilt binaries are attached to each [release](../../releases).
 
 ```sh
-git clone https://github.com/radu2lupu/claude-account-proxy
-cd claude-account-proxy
-./install.sh          # builds, installs ~/.local/bin/claude-account-proxy, starts a launchd / systemd user service
+git clone https://github.com/radu2lupu/limitbreak
+cd limitbreak
+./install.sh          # builds, installs ~/.local/bin/limitbreak, starts a launchd / systemd user service
 ```
 
 Then add the printed line to `~/.zshrc` or `~/.bashrc`:
 
 ```sh
-source "$HOME/.local/bin/claude-account-proxy-shell.sh"
+source "$HOME/.local/bin/limitbreak-shell.sh"
 ```
 
 That defines a `claude` function that points Claude Code at the proxy when it is running and runs plain `claude` when it is not. Use `./install.sh --binary <prebuilt>` on a host without Go.
@@ -51,19 +59,19 @@ That defines a `claude` function that points Claude Code at the proxy when it is
 ## Add accounts
 
 ```sh
-claude-account-proxy add            # signs in a new account in your browser, names it account-N
-claude-account-proxy add work       # or pick the name
-claude-account-proxy list           # accounts, who they are, which one is active (*)
-claude-account-proxy remove work    # sign it out and delete its login from this machine
+limitbreak add            # signs in a new account in your browser, names it account-N
+limitbreak add work       # or pick the name
+limitbreak list           # accounts, who they are, which one is active (*)
+limitbreak remove work    # sign it out and delete its login from this machine
 ```
 
 `add` runs Claude Code's own browser sign-in into its own config directory (`~/.claude-<name>`), checks the login landed, tells you which email it is, and warns if you added the same account twice. The running proxy picks it up within 30 seconds; no restart. The default account is whatever plain `claude auth login` signs in. Raw status for scripts: `curl -s http://127.0.0.1:48617/_status`.
 
-Every switch is logged (`~/Library/Logs/claude-account-proxy.log` on macOS, the journal on Linux): the account that ran out, when it resets, and the one now serving.
+Every switch is logged (`~/Library/Logs/limitbreak.log` on macOS, the journal on Linux): the account that ran out, when it resets, and the one now serving.
 
 ## Options
 
-`claude-account-proxy serve --port 48617 --upstream https://api.anthropic.com --home ~ --credentials auto|keychain|file`
+`limitbreak serve --port 48617 --upstream https://api.anthropic.com --home ~ --credentials auto|keychain|file`
 
 A request path may begin with `/_c/<client>/` to give a client (an agent, a tool) its own active account; the prefix is stripped before forwarding.
 
@@ -82,9 +90,9 @@ This project's niche is being small and conservative: one dependency-free Go bin
 
 ## Uninstall
 
-macOS: `launchctl bootout gui/$(id -u)/dev.claude-account-proxy; rm ~/Library/LaunchAgents/dev.claude-account-proxy.plist`.
-Linux: `systemctl --user disable --now claude-account-proxy`.
-Then remove `~/.local/bin/claude-account-proxy*` and the `source` line from your shell profile. Accounts you added stay as ordinary `~/.claude-<name>` logins; `claude-account-proxy remove <name>` deletes one.
+macOS: `launchctl bootout gui/$(id -u)/dev.limitbreak; rm ~/Library/LaunchAgents/dev.limitbreak.plist`.
+Linux: `systemctl --user disable --now limitbreak`.
+Then remove `~/.local/bin/limitbreak*` and the `source` line from your shell profile. Accounts you added stay as ordinary `~/.claude-<name>` logins; `limitbreak remove <name>` deletes one.
 
 ## Develop
 
