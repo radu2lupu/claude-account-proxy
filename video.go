@@ -13,9 +13,9 @@ import (
 	"time"
 )
 
-// runDemo shows a switch without touching any real login or the network: two made-up accounts, and
+// runVideo shows a switch without touching any real login or the network: two made-up accounts, and
 // a stand-in for Anthropic that reports the first account's window as spent.
-func runDemo(out io.Writer) error {
+func runVideo(out io.Writer) error {
 	home, err := os.MkdirTemp("", "limitbreak-demo")
 	if err != nil {
 		return err

@@ -18,7 +18,7 @@ claude ──ANTHROPIC_BASE_URL──▶ proxy 127.0.0.1:48617 ──▶ api.ant
                                  └─ 429 "rejected"? mark spent, retry on the next account
 ```
 
-Try it without touching any real login: `limitbreak demo` plays a simulated switch in your terminal.
+Try it without touching any real login: `limitbreak video` plays a simulated switch in your terminal as a little arcade battle.
 
 ## Quick start
 

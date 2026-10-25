@@ -19,7 +19,7 @@ const usage = `limitbreak [serve flags]        run the proxy (default)
 limitbreak add [name]           sign in a new account (opens the browser)
 limitbreak list                 show the accounts
 limitbreak remove <name> [-y]   sign an account out and delete its login
-limitbreak demo                 watch a switch happen, simulated, no real login touched
+limitbreak video                watch a switch happen as an arcade battle (simulated, no real login touched)
 
 The default account is the one plain "claude auth login" signs in.`
 
@@ -42,8 +42,8 @@ func runCommand(command string, args []string) int {
 			name = args[0]
 		}
 		err = addAccount(a, name, loginAs(a), os.Stdout)
-	case "demo":
-		err = runDemo(os.Stdout)
+	case "video":
+		err = runVideo(os.Stdout)
 	case "list":
 		listAccounts(a, os.Stdout)
 	case "remove":
