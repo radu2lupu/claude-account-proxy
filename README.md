@@ -1,5 +1,7 @@
 # limitbreak
 
+<p align="center"><img src="assets/limitbreak.gif" alt="Arcade-style battle: an account's limit gauge fills, LIMIT BREAK, the next account takes over" width="640"></p>
+
 ```
    ★ L I M I T   B R E A K ★
    ADA    [██████████] LIMIT   → spent
